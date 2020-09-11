@@ -1,5 +1,6 @@
 import datetime as dt
 import os
+import re
 
 import requests
 import telegram.ext as ext
@@ -31,30 +32,18 @@ def tsla_price_handler(update, context):
     if BOOT_TIME > update.message.date:
         return
 
-    message_text = update.message.text
-    trigger_words = [
-        'Elon',
-        'Musk',
-        'Tesla',
-        'TSLA',
-        'elon',
-        'musk',
-        'tesla',
-        'tsla',
-        'blon',
-        'clon',
-        'mars',
-        'Mars',
-        'SEC',
-        'sec'
+    regexes = [
+        re.compile(pattern, re.IGNORECASE) 
+        for pattern in ['.+lon', 'musk', 'te?sla', 'mars', 'sec']
     ]
 
-    if any(word in message_text for word in trigger_words):
-        price = get_current_tsla_price()
+    message_text = update.message.text
 
+    if any(regex.search(message_text) for regex in regexes):
+        price = get_current_tsla_price()
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-             text=f'TSLA @ ${price}'
+            text=f'TSLA @ ${price}'
         )
 
 # Add all our command handlers
